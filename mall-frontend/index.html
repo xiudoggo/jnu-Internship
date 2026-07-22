@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>潮购 - 品质生活，潮流之选</title>
+  </head>
+  <body>
+    <div id="app">
+      <div style="text-align:center;padding:100px 20px;color:#999;font-family:sans-serif;">
+        <h2>&#x1f525; 潮购加载中...</h2>
+        <p>如果长时间停留在此页面，说明 Vue 应用未成功挂载</p>
+      </div>
+    </div>
+    <script>
+      // 全局错误捕获
+      window.onerror = function(msg, url, line, col, error) {
+        document.getElementById('app').innerHTML =
+          '<div style="background:#e74c3c;color:white;padding:30px;font-family:monospace;">' +
+          '<h2>❌ JavaScript 错误</h2>' +
+          '<p><b>消息:</b> ' + msg + '</p>' +
+          '<p><b>文件:</b> ' + url + ':' + line + '</p>' +
+          '<p><b>堆栈:</b> <pre>' + (error && error.stack || '无') + '</pre></p>' +
+          '</div>';
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        document.getElementById('app').innerHTML +=
+          '<div style="background:#e67e22;color:white;padding:20px;margin-top:10px;font-family:monospace;">' +
+          '<h2>⚠️ 未处理的 Promise 拒绝</h2>' +
+          '<pre>' + (e.reason && (e.reason.stack || e.reason.message || e.reason)) + '</pre>' +
+          '</div>';
+      });
+    </script>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
