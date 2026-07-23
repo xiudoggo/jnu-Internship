@@ -42,6 +42,9 @@
                 <el-dropdown-item v-if="userStore.userInfo?.role === 1" @click="$router.push('/admin')">
                   <el-icon><Setting /></el-icon> 后台管理
                 </el-dropdown-item>
+                <el-dropdown-item @click="$router.push('/change-password')">
+                  <el-icon><Edit /></el-icon> 修改密码
+                </el-dropdown-item>
                 <el-dropdown-item @click="userStore.logout()">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>

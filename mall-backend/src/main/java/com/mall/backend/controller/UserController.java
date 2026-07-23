@@ -69,4 +69,38 @@ public class UserController {
         if (data == null) return Result.fail("用户不存在");
         return Result.ok(data);
     }
+
+    @Operation(summary = "验证原密码", description = "修改密码前先验证原密码是否正确")
+    @PostMapping("/password/verify")
+    public Result<Void> verifyPassword(
+            @Parameter(description = "{oldPassword: '原密码'}")
+            @RequestBody Map<String, String> body,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) return Result.fail("未登录");
+        String oldPassword = body.get("oldPassword");
+        if (oldPassword == null || oldPassword.isBlank()) return Result.fail("原密码不能为空");
+        boolean ok = userService.verifyPassword(userId, oldPassword);
+        if (!ok) return Result.fail("原密码错误");
+        return Result.ok("验证通过", null);
+    }
+
+    @Operation(summary = "修改密码", description = "核验原密码后更新为新密码，需已登录")
+    @PutMapping("/password")
+    public Result<Void> updatePassword(
+            @Parameter(description = "修改密码请求体：oldPassword（原密码）、newPassword（新密码）")
+            @RequestBody Map<String, String> body,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) return Result.fail("未登录");
+        String oldPassword = body.get("oldPassword");
+        String newPassword = body.get("newPassword");
+        if (oldPassword == null || oldPassword.isBlank()) return Result.fail("原密码不能为空");
+        if (newPassword == null || newPassword.isBlank()) return Result.fail("新密码不能为空");
+        if (newPassword.length() < 6) return Result.fail("新密码至少6位");
+        if (oldPassword.equals(newPassword)) return Result.fail("新密码不能与原密码相同");
+        boolean ok = userService.updatePassword(userId, oldPassword, newPassword);
+        if (!ok) return Result.fail("原密码错误");
+        return Result.ok("密码修改成功", null);
+    }
 }

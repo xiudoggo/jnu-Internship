@@ -59,6 +59,12 @@ const routes = [
         name: 'Favorites',
         component: () => import('@/views/FavoriteView.vue'),
         meta: { title: '我的收藏', requiresAuth: true }
+      },
+      {
+        path: 'change-password',
+        name: 'ChangePassword',
+        component: () => import('@/views/ChangePasswordView.vue'),
+        meta: { title: '修改密码', requiresAuth: true }
       }
     ]
   },
