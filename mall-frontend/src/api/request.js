@@ -1,4 +1,5 @@
 import axios from 'axios'
+import qs from 'qs'
 import { ElMessage } from 'element-plus'
 
 const instance = axios.create({
@@ -6,12 +7,21 @@ const instance = axios.create({
   timeout: 10000
 })
 
-// 请求拦截器：自动附加 Token
+// 请求拦截器：自动附加 Token + GET 请求 qs 参数序列化
 instance.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // GET 请求参数序列化（支持数组 repeat 格式和嵌套对象）
+    if (config.method === 'get' && config.params) {
+      config.paramsSerializer = (params) => {
+        return qs.stringify(params, {
+          arrayFormat: 'repeat',
+          allowDots: true
+        })
+      }
     }
     return config
   },

@@ -5,6 +5,7 @@ import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import 'element-plus/dist/index.css'
 
 import axios from 'axios'
+import qs from 'qs'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
@@ -14,6 +15,13 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 axios.defaults.baseURL = 'http://localhost:8080'
 // 携带 Cookie（Token 由后端通过 HttpOnly Cookie 管理，浏览器自动发送）
 axios.defaults.withCredentials = true
+// GET 请求参数序列化（支持数组 repeat 格式和嵌套对象）
+axios.defaults.paramsSerializer = (params) => {
+  return qs.stringify(params, {
+    arrayFormat: 'repeat',
+    allowDots: true
+  })
+}
 
 // 全局响应拦截器
 axios.interceptors.response.use(
