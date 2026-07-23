@@ -11,11 +11,13 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.18.1",
+    "echarts": "^6.1.0",
     "element-plus": "^2.14.3",
     "mockjs": "^1.1.0",
     "pinia": "^4.0.2",
     "pinia-plugin-persistedstate": "^4.7.1",
     "vue": "^3.5.39",
+    "vue-echarts": "^8.0.1",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {

@@ -16,6 +16,10 @@
         active-text-color="#409EFF"
         class="sidebar-menu"
       >
+        <el-menu-item index="/admin/dashboard">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>数据统计</span>
+        </el-menu-item>
         <el-menu-item index="/admin/products">
           <el-icon><Goods /></el-icon>
           <span>商品管理</span>
