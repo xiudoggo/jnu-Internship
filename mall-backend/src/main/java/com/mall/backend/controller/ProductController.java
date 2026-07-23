@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.mall.backend.dto.PageResult;
 import com.mall.backend.dto.Result;
 import com.mall.backend.entity.Product;
-import com.mall.backend.mapper.ProductMapper;
+import com.mall.backend.service.ProductService;
 
 import java.util.List;
 
@@ -16,10 +16,10 @@ import java.util.List;
 @RequestMapping("/api/product")
 public class ProductController {
 
-    private final ProductMapper mapper;
+    private final ProductService productService;
 
-    public ProductController(ProductMapper mapper) {
-        this.mapper = mapper;
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
     /** 商品列表（分页） */
@@ -28,11 +28,7 @@ public class ProductController {
     public Result<PageResult<Product>> list(
             @Parameter(description = "页码", example = "1") @PathVariable int page,
             @Parameter(description = "每页数量", example = "12") @PathVariable int pageSize) {
-
-        int offset = (page - 1) * pageSize;
-        long total = mapper.countFiltered(null, null);
-        List<Product> list = mapper.selectPage(offset, pageSize, null, null, "default");
-        return Result.ok(new PageResult<Product>(total, list, page, pageSize));
+        return Result.ok(productService.list(page, pageSize));
     }
 
     /** 商品列表（分页 + 排序） */
@@ -42,11 +38,7 @@ public class ProductController {
             @Parameter(description = "页码", example = "1") @PathVariable int page,
             @Parameter(description = "每页数量", example = "12") @PathVariable int pageSize,
             @Parameter(description = "排序方式：default / price-asc / price-desc / sales", example = "default") @PathVariable String sort) {
-
-        int offset = (page - 1) * pageSize;
-        long total = mapper.countFiltered(null, null);
-        List<Product> list = mapper.selectPage(offset, pageSize, null, null, sort);
-        return Result.ok(new PageResult<Product>(total, list, page, pageSize));
+        return Result.ok(productService.listWithSort(page, pageSize, sort));
     }
 
     /** 按分类筛选商品（分页） */
@@ -56,11 +48,7 @@ public class ProductController {
             @Parameter(description = "分类 ID") @PathVariable Long categoryId,
             @Parameter(description = "页码", example = "1") @PathVariable int page,
             @Parameter(description = "每页数量", example = "12") @PathVariable int pageSize) {
-
-        int offset = (page - 1) * pageSize;
-        long total = mapper.countFiltered(categoryId, null);
-        List<Product> list = mapper.selectPage(offset, pageSize, categoryId, null, "default");
-        return Result.ok(new PageResult<Product>(total, list, page, pageSize));
+        return Result.ok(productService.listByCategory(categoryId, page, pageSize));
     }
 
     /** 按分类筛选商品（分页 + 排序） */
@@ -71,25 +59,21 @@ public class ProductController {
             @Parameter(description = "页码", example = "1") @PathVariable int page,
             @Parameter(description = "每页数量", example = "12") @PathVariable int pageSize,
             @Parameter(description = "排序方式：default / price-asc / price-desc / sales", example = "default") @PathVariable String sort) {
-
-        int offset = (page - 1) * pageSize;
-        long total = mapper.countFiltered(categoryId, null);
-        List<Product> list = mapper.selectPage(offset, pageSize, categoryId, null, sort);
-        return Result.ok(new PageResult<Product>(total, list, page, pageSize));
+        return Result.ok(productService.listByCategoryWithSort(categoryId, page, pageSize, sort));
     }
 
     /** 热门商品 */
     @Operation(summary = "获取热门商品", description = "获取前 8 个热门商品（is_hot=1）")
     @GetMapping("/hot")
     public Result<List<Product>> hot() {
-        return Result.ok(mapper.selectHot());
+        return Result.ok(productService.hot());
     }
 
     /** 新品 */
     @Operation(summary = "获取新品", description = "获取前 8 个新品（is_new=1）")
     @GetMapping("/new")
     public Result<List<Product>> news() {
-        return Result.ok(mapper.selectNew());
+        return Result.ok(productService.news());
     }
 
     /** 商品详情 */
@@ -97,7 +81,7 @@ public class ProductController {
     @GetMapping("/{id}")
     public Result<Product> detail(
             @Parameter(description = "商品 ID") @PathVariable Long id) {
-        Product p = mapper.selectById(id);
+        Product p = productService.detail(id);
         return p != null ? Result.ok(p) : Result.fail("商品不存在");
     }
 
