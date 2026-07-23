@@ -12,10 +12,11 @@ public class JwtUtil {
     private static final long EXPIRE = 7 * 24 * 60 * 60 * 1000; // 7天
 
     /** 生成 Token */
-    public static String generate(Long userId, String phone) {
+    public static String generate(Long userId, String phone, Integer role) {
         return Jwts.builder()
             .setSubject(String.valueOf(userId))
             .claim("phone", phone)
+            .claim("role", role)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + EXPIRE))
             .signWith(KEY)
@@ -30,6 +31,18 @@ public class JwtUtil {
             String subject = Jwts.parserBuilder().setSigningKey(KEY).build()
                 .parseClaimsJws(token).getBody().getSubject();
             return Long.parseLong(subject);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** 从 Token 中解析用户角色（null 表示旧版 Token 或解析失败） */
+    public static Integer getUserRole(String token) {
+        if (token == null) return null;
+        try {
+            if (token.startsWith("Bearer ")) token = token.substring(7);
+            return Jwts.parserBuilder().setSigningKey(KEY).build()
+                .parseClaimsJws(token).getBody().get("role", Integer.class);
         } catch (Exception e) {
             return null;
         }

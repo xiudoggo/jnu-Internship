@@ -1,14 +1,18 @@
 <template>
   <div class="category-nav">
-    <div
-      v-for="cat in categories"
-      :key="cat.id"
-      class="category-item"
-      @click="$router.push({ path: '/products', query: { categoryId: cat.id } })"
-    >
-      <el-icon :size="28"><component :is="cat.icon" /></el-icon>
-      <span class="cat-name">{{ cat.name }}</span>
-    </div>
+    <template v-for="cat in categories" :key="cat.id">
+      <div class="cat-group">
+        <span class="root-name">{{ cat.name }}</span>
+        <div class="child-list">
+          <span
+            v-for="child in cat.children"
+            :key="child.id"
+            class="child-item"
+            @click="$router.push({ path: '/products', query: { categoryId: child.id } })"
+          >{{ child.name }}</span>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -28,32 +32,45 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .category-nav {
-  @include flex-center;
-  gap: $spacing-xl;
-  padding: $spacing-lg 0;
+  display: flex;
+  gap: $spacing-lg;
+  padding: $spacing-lg;
   margin-bottom: $spacing-lg;
   background: $bg-white;
   border-radius: $radius-md;
   flex-wrap: wrap;
 }
-.category-item {
-  @include flex-center;
+.cat-group {
+  display: flex;
   flex-direction: column;
-  gap: $spacing-xs;
-  cursor: pointer;
-  padding: $spacing-sm $spacing-md;
-  border-radius: $radius-md;
-  transition: all 0.3s;
+  gap: 6px;
+}
+.root-name {
+  font-weight: 600;
+  font-size: $font-size-sm;
+  color: $text-primary;
+  padding-bottom: 4px;
+  border-bottom: 2px solid $primary-color;
+}
+.child-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.child-item {
+  font-size: $font-size-xs;
   color: $text-regular;
+  cursor: pointer;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: $bg-light;
+  transition: all 0.2s;
   &:hover {
-    background: lighten($primary-color, 40%);
     color: $primary-color;
+    background: lighten($primary-color, 40%);
   }
 }
-.cat-name {
-  font-size: $font-size-sm;
-}
 @media (max-width: 768px) {
-  .category-nav { gap: $spacing-md; }
+  .category-nav { gap: $spacing-md; padding: $spacing-md; }
 }
 </style>

@@ -1,19 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import router from '@/router'
 import axios from 'axios'
+import { useCartStore } from '@/stores/cart'
 
 export const useUserStore = defineStore('user', () => {
-  const token = ref(localStorage.getItem('token') || '')
+  // Token 由后端 HttpOnly Cookie 管理，前端只保存 userInfo 用于 UI 展示和路由守卫
   const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || 'null'))
 
-  const isLoggedIn = computed(() => !!token.value)
+  const isLoggedIn = computed(() => !!userInfo.value)
 
   async function login(phone, password) {
     const res = await axios.post('/api/user/login', { phone, password })
     if (res.data.code === 200) {
-      token.value = res.data.data.token
       userInfo.value = res.data.data.userInfo
-      localStorage.setItem('token', token.value)
       localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
     }
     return res.data
@@ -33,12 +33,16 @@ export const useUserStore = defineStore('user', () => {
     return res.data
   }
 
-  function logout() {
-    token.value = ''
+  async function logout() {
+    // 调用后端接口清除 Cookie
+    await axios.post('/api/user/logout')
     userInfo.value = null
-    localStorage.removeItem('token')
     localStorage.removeItem('userInfo')
+    // 清空购物车状态
+    useCartStore().clearCart()
+    // 跳转到首页
+    router.push('/')
   }
 
-  return { token, userInfo, isLoggedIn, login, register, fetchUserInfo, logout }
+  return { userInfo, isLoggedIn, login, register, fetchUserInfo, logout }
 })

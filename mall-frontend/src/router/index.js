@@ -73,6 +73,36 @@ const routes = [
     name: 'Register',
     component: () => import('@/views/RegisterView.vue'),
     meta: { title: '注册' }
+  },
+  // ==================== 后台管理 ====================
+  {
+    path: '/admin',
+    component: () => import('@/components/AdminLayout.vue'),
+    meta: { requiresAdmin: true },
+    children: [
+      {
+        path: '',
+        redirect: '/admin/products'
+      },
+      {
+        path: 'products',
+        name: 'AdminProducts',
+        component: () => import('@/views/admin/ProductManage.vue'),
+        meta: { title: '商品管理 - 后台' }
+      },
+      {
+        path: 'users',
+        name: 'AdminUsers',
+        component: () => import('@/views/admin/UserManage.vue'),
+        meta: { title: '用户管理 - 后台' }
+      },
+      {
+        path: 'orders',
+        name: 'AdminOrders',
+        component: () => import('@/views/admin/OrderManage.vue'),
+        meta: { title: '订单管理 - 后台' }
+      }
+    ]
   }
 ]
 
@@ -84,14 +114,34 @@ const router = createRouter({
   }
 })
 
-// 需要登录的页面守卫
+// 登录守卫 + 管理员守卫（Token 由 HttpOnly Cookie 管理，前端通过 userInfo 判断登录状态）
 router.beforeEach((to, from, next) => {
-  let token = localStorage.getItem('token')
-  if (to.meta.requiresAuth && !token) {
+  let userInfo = null
+  try {
+    userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
+  } catch (e) { /* ignore */ }
+
+  const isLoggedIn = !!userInfo
+
+  // 需要登录
+  if (to.meta.requiresAuth && !isLoggedIn) {
     next({ name: 'Login', query: { redirect: to.fullPath } })
-  } else {
-    next()
+    return
   }
+
+  // 需要管理员权限
+  if (to.meta.requiresAdmin) {
+    if (!isLoggedIn) {
+      next({ name: 'Login', query: { redirect: to.fullPath } })
+      return
+    }
+    if (userInfo.role !== 1) {
+      next({ name: 'Home' })
+      return
+    }
+  }
+
+  next()
   document.title = to.meta.title || '潮购'
 })
 

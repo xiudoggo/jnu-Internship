@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @TableName("product")
 @Data
@@ -30,13 +29,6 @@ public class Product {
     private Boolean isNew;
     @TableField("category_id")
     private Long categoryId;
-    @TableField("category_name")
-    private String categoryName;
-    private String brand;
-    private Double rating;
-    @TableField("review_count")
-    private Integer reviewCount;
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-    private Boolean deleted;
+    /** 上架状态：1=上架，0=下架 */
+    private Integer status;
 }

@@ -47,9 +47,7 @@ async function fetchResults() {
   if (!q) { list.value = []; total.value = 0; return }
   loading.value = true
   try {
-    const res = await axios.get('/api/search', {
-      params: { q, page: page.value, pageSize }
-    })
+    const res = await axios.get(`/api/search/${encodeURIComponent(q)}/${page.value}/${pageSize}`)
     if (res.data.code === 200) {
       list.value = res.data.data.list
       total.value = res.data.data.total

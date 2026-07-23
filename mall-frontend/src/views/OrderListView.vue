@@ -33,8 +33,9 @@
               >
                 <img :src="item.image" class="item-img" />
                 <span class="item-name">{{ item.name }}</span>
-                <span class="item-price">&yen;{{ Number(item.price).toFixed(2) }}</span>
+                <span class="item-price">&yen;{{ Number(item.price || 0).toFixed(2) }}</span>
                 <span class="item-qty">x{{ item.quantity }}</span>
+                <span class="item-subtotal">&yen;{{ (Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2) }}</span>
               </div>
             </div>
             <div class="order-total">
@@ -97,7 +98,6 @@ async function handlePay(order) {
     const res = await axios.put('/api/order/' + order.id + '/pay')
     if (res.data.code === 200) {
       order.status = 1
-      order.statusText = '已支付'
       ElMessage.success('支付成功')
     }
   } catch { ElMessage.error('支付失败') }
@@ -109,7 +109,6 @@ async function handleCancel(order) {
     const res = await axios.put('/api/order/' + order.id + '/cancel')
     if (res.data.code === 200) {
       order.status = 4
-      order.statusText = '已取消'
       ElMessage.success('已取消')
     }
   } catch { /* 用户取消操作 */ }

@@ -41,10 +41,7 @@ onMounted(async () => {
 async function removeFav(item) {
   try {
     const res = await axios.post('/api/favorite/toggle', {
-      productId: item.productId,
-      name: item.name,
-      image: item.image,
-      price: item.price
+      productId: item.productId
     })
     if (res.data.code === 200 && !res.data.data.isFavorited) {
       list.value = list.value.filter(f => f.productId !== item.productId)

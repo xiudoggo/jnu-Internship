@@ -9,7 +9,7 @@ import com.mall.backend.dto.Result;
 import com.mall.backend.entity.Product;
 import com.mall.backend.mapper.ProductMapper;
 
-import java.util.*;
+import java.util.List;
 
 @Tag(name = "商品管理", description = "商品列表、详情、评论等接口")
 @RestController
@@ -101,32 +101,4 @@ public class ProductController {
         return p != null ? Result.ok(p) : Result.fail("商品不存在");
     }
 
-    /** 商品评论（模拟） */
-    @Operation(summary = "获取商品评论", description = "根据商品 ID 获取模拟商品评论列表")
-    @GetMapping("/{id}/reviews")
-    public Result<List<Map<String, Object>>> reviews(
-            @Parameter(description = "商品 ID") @PathVariable Long id) {
-        List<Map<String, Object>> list = new ArrayList<>();
-        String[] nicknames = {"潮人小明", "购物达人", "数码控", "时尚先锋", "美食家"};
-        String[] contents = {
-            "商品质量非常好，物流很快，好评！",
-            "性价比很高，推荐购买，已经回购好几次了。",
-            "包装很精致，使用体验不错，颜色也好看。",
-            "发货速度超快，第二天就收到了，非常满意。",
-            "质量不错，跟描述一致，值得入手。"
-        };
-        for (int i = 0; i < 5; i++) {
-            Map<String, Object> rv = new LinkedHashMap<>();
-            rv.put("id", i + 1);
-            rv.put("userId", 100 + i);
-            rv.put("nickname", nicknames[i]);
-            rv.put("avatar", "https://picsum.photos/seed/avatar" + i + "/40/40");
-            rv.put("star", 3 + i % 3);
-            rv.put("content", contents[i]);
-            rv.put("productId", id);
-            rv.put("createTime", "2025-07-" + (10 + i) + " 14:30:00");
-            list.add(rv);
-        }
-        return Result.ok(list);
-    }
 }

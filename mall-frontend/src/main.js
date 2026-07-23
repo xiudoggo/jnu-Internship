@@ -12,6 +12,22 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 // 全局 axios 默认地址 → 后端 8080
 axios.defaults.baseURL = 'http://localhost:8080'
+// 携带 Cookie（Token 由后端通过 HttpOnly Cookie 管理，浏览器自动发送）
+axios.defaults.withCredentials = true
+
+// 全局响应拦截器
+axios.interceptors.response.use(
+  response => {
+    if (response.data && response.data.code !== 200) {
+      console.warn('API 错误:', response.data.message)
+    }
+    return response
+  },
+  error => {
+    console.error('网络错误:', error.message)
+    return Promise.reject(error)
+  }
+)
 
 import './styles/global.scss'
 // import './mock'  // 已切换后端，禁用 MockJS
@@ -32,7 +48,8 @@ app.config.errorHandler = (err, vm, info) => {
 // 只注册实际用到的图标，避免全部加载
 const usedIcons = ['ShoppingCart', 'Tickets', 'Star', 'StarFilled', 'ArrowDown',
   'TrendCharts', 'Present', 'Search', 'Phone', 'Lock', 'User', 'Delete',
-  'Goods', 'Location', 'Monitor', 'MagicStick', 'Food', 'House', 'Bicycle']
+  'Goods', 'Location', 'Monitor', 'MagicStick', 'Food', 'House', 'Bicycle',
+  'Back', 'Setting', 'Edit', 'Plus', 'RefreshRight']
 for (const key of usedIcons) {
   if (ElementPlusIconsVue[key]) {
     app.component(key, ElementPlusIconsVue[key])

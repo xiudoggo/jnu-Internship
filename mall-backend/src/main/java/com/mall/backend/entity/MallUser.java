@@ -3,8 +3,6 @@ package com.mall.backend.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @TableName("mall_user")
 @Data
 @NoArgsConstructor
@@ -18,6 +16,6 @@ public class MallUser {
     private String password;
     private String avatar;
     private String email;
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
+    /** 角色：0=普通用户，1=管理员 */
+    private Integer role;
 }

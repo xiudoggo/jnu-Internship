@@ -23,15 +23,12 @@ public class OrderInfo {
     @TableField("pay_amount")
     private BigDecimal payAmount;
     private Integer status;
-    @TableField("status_text")
-    private String statusText;
     @TableField("receiver_name")
     private String receiverName;
     @TableField("receiver_phone")
     private String receiverPhone;
     @TableField("receiver_address")
     private String receiverAddress;
-    private String items; // JSON
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField("pay_time")

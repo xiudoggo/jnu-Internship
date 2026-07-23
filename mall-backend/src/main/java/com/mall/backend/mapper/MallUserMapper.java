@@ -6,11 +6,14 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import com.mall.backend.entity.MallUser;
 
+import java.util.List;
+
 @Mapper
 public interface MallUserMapper extends BaseMapper<MallUser> {
-    @Select("SELECT * FROM mall_user WHERE phone = #{phone} AND password = #{password} LIMIT 1")
-    MallUser findByPhoneAndPassword(@Param("phone") String phone, @Param("password") String password);
 
     @Select("SELECT * FROM mall_user WHERE phone = #{phone} LIMIT 1")
     MallUser findByPhone(@Param("phone") String phone);
+
+    @Select("SELECT * FROM mall_user ORDER BY id DESC")
+    List<MallUser> selectAllUsers();
 }

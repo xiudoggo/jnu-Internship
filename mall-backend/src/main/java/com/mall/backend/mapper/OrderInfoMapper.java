@@ -13,4 +13,7 @@ public interface OrderInfoMapper extends BaseMapper<OrderInfo> {
 
     @Select("SELECT * FROM orders WHERE user_id = #{userId} ORDER BY create_time DESC")
     List<OrderInfo> selectByUserId(@Param("userId") Long userId);
+
+    @Select("SELECT * FROM orders ORDER BY create_time DESC")
+    List<OrderInfo> selectAllOrders();
 }

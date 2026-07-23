@@ -47,13 +47,13 @@
             </template>
           </el-table-column>
           <el-table-column label="单价" width="120" align="center">
-            <template #default="{ row }">&yen;{{ Number(row.price).toFixed(2) }}</template>
+            <template #default="{ row }">&yen;{{ Number(row.price || 0).toFixed(2) }}</template>
           </el-table-column>
           <el-table-column label="数量" width="100" align="center">
             <template #default="{ row }">x{{ row.quantity }}</template>
           </el-table-column>
           <el-table-column label="小计" width="120" align="center">
-            <template #default="{ row }">&yen;{{ Number(row.totalPrice).toFixed(2) }}</template>
+            <template #default="{ row }">&yen;{{ (Number(row.price || 0) * Number(row.quantity || 0)).toFixed(2) }}</template>
           </el-table-column>
         </el-table>
       </div>
@@ -112,7 +112,6 @@ async function handlePay() {
   const res = await axios.put('/api/order/' + order.value.id + '/pay')
   if (res.data.code === 200) {
     order.value.status = 1
-    order.value.statusText = '已支付'
     ElMessage.success('支付成功')
   }
 }
@@ -122,7 +121,6 @@ async function handleCancel() {
   const res = await axios.put('/api/order/' + order.value.id + '/cancel')
   if (res.data.code === 200) {
     order.value.status = 4
-    order.value.statusText = '已取消'
     ElMessage.success('已取消')
   }
 }

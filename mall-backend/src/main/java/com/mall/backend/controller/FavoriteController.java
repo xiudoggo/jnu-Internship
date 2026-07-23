@@ -8,10 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import com.mall.backend.dto.Result;
 import com.mall.backend.entity.FavoriteItem;
+import com.mall.backend.entity.Product;
 import com.mall.backend.mapper.FavoriteItemMapper;
+import com.mall.backend.mapper.ProductMapper;
 import com.mall.backend.security.AuthUtil;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,10 +21,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/favorite")
 public class FavoriteController {
 
-    private final FavoriteItemMapper mapper;
+    private final FavoriteItemMapper favoriteMapper;
+    private final ProductMapper productMapper;
 
-    public FavoriteController(FavoriteItemMapper mapper) {
-        this.mapper = mapper;
+    public FavoriteController(FavoriteItemMapper favoriteMapper, ProductMapper productMapper) {
+        this.favoriteMapper = favoriteMapper;
+        this.productMapper = productMapper;
     }
 
     @Operation(summary = "获取收藏列表", description = "获取当前登录用户的收藏商品列表")
@@ -31,8 +34,21 @@ public class FavoriteController {
     public Result<List<Map<String, Object>>> list(HttpServletRequest request) {
         Long userId = AuthUtil.getCurrentUserId(request);
         if (userId == null) return Result.ok(new ArrayList<>());
+
+        List<FavoriteItem> favItems = favoriteMapper.selectByUserId(userId);
+        if (favItems.isEmpty()) return Result.ok(new ArrayList<>());
+
+        // 批量查询关联的商品信息
+        List<Long> productIds = favItems.stream()
+                .map(FavoriteItem::getProductId)
+                .distinct()
+                .collect(Collectors.toList());
+        List<Product> products = productMapper.selectBatchIds(productIds);
+        Map<Long, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, p -> p));
+
         return Result.ok(
-            mapper.selectByUserId(userId).stream().map(this::toMap).collect(Collectors.toList())
+            favItems.stream().map(f -> toMap(f, productMap.get(f.getProductId()))).collect(Collectors.toList())
         );
     }
 
@@ -40,38 +56,34 @@ public class FavoriteController {
     @PostMapping("/toggle")
     @Transactional
     public Result<Map<String, Object>> toggle(
-            @Parameter(description = "请求体：productId（商品ID）、name（商品名）、image（商品图）、price（价格）")
+            @Parameter(description = "请求体：productId（商品ID）")
             @RequestBody Map<String, Object> body,
             HttpServletRequest request) {
         Long userId = AuthUtil.getCurrentUserId(request);
         if (userId == null) return Result.fail("请先登录");
 
         Long productId = Long.valueOf(body.get("productId").toString());
-        FavoriteItem exist = mapper.selectByUserAndProduct(userId, productId);
+        FavoriteItem exist = favoriteMapper.selectByUserAndProduct(userId, productId);
 
         if (exist != null) {
-            mapper.deleteById(exist.getId());
+            favoriteMapper.deleteById(exist.getId());
             return Result.ok(Map.of("isFavorited", false));
         } else {
             FavoriteItem item = FavoriteItem.builder()
                 .userId(userId).productId(productId)
-                .productName((String) body.getOrDefault("name", ""))
-                .productImage((String) body.getOrDefault("image", ""))
-                .productPrice(body.get("price") != null ? new BigDecimal(body.get("price").toString()) : BigDecimal.ZERO)
                 .build();
-            mapper.insert(item);
+            favoriteMapper.insert(item);
             return Result.ok(Map.of("isFavorited", true));
         }
     }
 
-    private Map<String, Object> toMap(FavoriteItem f) {
+    private Map<String, Object> toMap(FavoriteItem f, Product product) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", f.getId());
         m.put("productId", f.getProductId());
-        m.put("name", f.getProductName());
-        m.put("image", f.getProductImage());
-        m.put("price", f.getProductPrice());
-        m.put("createTime", f.getCreateTime() != null ? f.getCreateTime().toString() : "");
+        m.put("name", product != null ? product.getName() : "");
+        m.put("image", product != null ? product.getCoverImage() : "");
+        m.put("price", product != null ? product.getPrice() : null);
         return m;
     }
 }

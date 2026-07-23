@@ -1,14 +1,18 @@
 <template>
   <div class="detail-page">
     <div class="page-container" v-if="product">
-      <!-- 面包屑 -->
-      <el-breadcrumb separator="/" class="breadcrumb">
-        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/products', query: { categoryId: product.categoryId } }">
-          {{ product.categoryName }}
-        </el-breadcrumb-item>
-        <el-breadcrumb-item>{{ product.name }}</el-breadcrumb-item>
-      </el-breadcrumb>
+      <!-- 面包屑 + 返回 -->
+      <div class="detail-top-bar">
+        <el-button size="small" @click="$router.back()">
+          <el-icon><Back /></el-icon> 返回
+        </el-button>
+        <el-breadcrumb separator="/" class="breadcrumb">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/products' }">全部商品</el-breadcrumb-item>
+          <el-breadcrumb-item v-if="categoryName">{{ categoryName }}</el-breadcrumb-item>
+          <el-breadcrumb-item>{{ product.name }}</el-breadcrumb-item>
+        </el-breadcrumb>
+      </div>
 
       <!-- 商品主体 -->
       <div class="detail-main">
@@ -69,32 +73,15 @@
         </div>
       </div>
 
-      <!-- Tab：详情 / 评论 -->
-      <div class="detail-tabs">
-        <el-tabs v-model="activeTab">
-          <el-tab-pane label="商品详情" name="detail">
-            <div class="detail-content">
-              <div v-for="(img, idx) in product.images" :key="idx" class="detail-img-wrap">
-                <img :src="img" class="detail-img" />
-              </div>
-              <p class="detail-text">{{ product.description }}</p>
-            </div>
-          </el-tab-pane>
-          <el-tab-pane label="商品评论" name="reviews">
-            <div class="review-list" v-if="reviews.length > 0">
-              <div v-for="rv in reviews" :key="rv.id" class="review-item">
-                <div class="review-header">
-                  <img :src="rv.avatar" class="review-avatar" />
-                  <span class="review-nickname">{{ rv.nickname }}</span>
-                  <el-rate v-model="rv.star" disabled size="small" />
-                  <span class="review-time">{{ rv.createTime }}</span>
-                </div>
-                <p class="review-content">{{ rv.content }}</p>
-              </div>
-            </div>
-            <el-empty v-else description="暂无评论" />
-          </el-tab-pane>
-        </el-tabs>
+      <!-- 商品详情 -->
+      <div class="detail-content-section">
+        <h3 class="section-title">商品详情</h3>
+        <div class="detail-content">
+          <div v-for="(img, idx) in product.images" :key="idx" class="detail-img-wrap">
+            <img :src="img" class="detail-img" />
+          </div>
+          <p class="detail-text">{{ product.description }}</p>
+        </div>
       </div>
     </div>
 
@@ -119,34 +106,44 @@ const cartStore = useCartStore()
 const userStore = useUserStore()
 
 const product = ref(null)
-const reviews = ref([])
 const quantity = ref(1)
 const isFav = ref(false)
-const activeTab = ref('detail')
+const categoryName = ref('')
 
 onMounted(async () => {
   const id = route.params.id
   try {
-    const res = await axios.get('/api/product/' + id)
-    if (res.data.code === 200) {
-      const p = res.data.data
-      // images 从 MySQL 返回的是 JSON 字符串，需解析为数组
+    const [prodRes, catRes] = await Promise.all([
+      axios.get('/api/product/' + id),
+      axios.get('/api/category/tree')
+    ])
+    if (prodRes.data.code === 200) {
+      const p = prodRes.data.data
       if (typeof p.images === 'string') {
         try { p.images = JSON.parse(p.images) } catch (e) { p.images = [] }
       }
-      // 确保价格是数字
       p.price = Number(p.price)
       p.originalPrice = Number(p.originalPrice)
       product.value = p
+
+      // 从分类树中查找 categoryName
+      if (catRes.data.code === 200 && p.categoryId) {
+        const findCat = (cats, id) => {
+          for (const cat of cats) {
+            if (String(cat.id) === String(id)) return cat.name
+            if (cat.children) {
+              const found = findCat(cat.children, id)
+              if (found) return found
+            }
+          }
+          return ''
+        }
+        categoryName.value = findCat(catRes.data.data, p.categoryId)
+      }
     }
   } catch {
     ElMessage.error('商品不存在')
   }
-  // 加载评论
-  try {
-    const rvRes = await axios.get('/api/product/' + id + '/reviews')
-    if (rvRes.data.code === 200) reviews.value = rvRes.data.data
-  } catch { /* */ }
 })
 
 function addToCart() {
@@ -174,10 +171,7 @@ function toggleFav() {
   ElMessage.success(isFav.value ? '已收藏' : '已取消收藏')
   if (product.value) {
     axios.post('/api/favorite/toggle', {
-      productId: product.value.id,
-      name: product.value.name,
-      image: product.value.coverImage,
-      price: product.value.price
+      productId: product.value.id
     }).catch(() => {})
   }
 }
@@ -185,7 +179,10 @@ function toggleFav() {
 
 <style lang="scss" scoped>
 .page-container { @include page-container; }
-.breadcrumb { margin-bottom: $spacing-md; }
+.detail-top-bar {
+  display: flex; align-items: center; gap: $spacing-md; margin-bottom: $spacing-md;
+}
+.breadcrumb { margin: 0; }
 .detail-main {
   display: flex;
   gap: $spacing-xl;

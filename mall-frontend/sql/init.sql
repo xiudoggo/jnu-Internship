@@ -16,9 +16,7 @@ CREATE TABLE mall_user (
   nickname VARCHAR(50) DEFAULT '' COMMENT '昵称',
   avatar VARCHAR(255) DEFAULT '' COMMENT '头像URL',
   email VARCHAR(100) DEFAULT '' COMMENT '邮箱',
-  status TINYINT DEFAULT 1 COMMENT '状态 1正常 0禁用',
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  status TINYINT DEFAULT 1 COMMENT '状态 1正常 0禁用'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商城用户表';
 
 -- ============================================
@@ -32,9 +30,7 @@ CREATE TABLE category (
   level TINYINT DEFAULT 1 COMMENT '层级 1/2/3',
   sort INT DEFAULT 0 COMMENT '排序',
   icon VARCHAR(50) DEFAULT '' COMMENT '图标',
-  status TINYINT DEFAULT 1 COMMENT '状态',
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  status TINYINT DEFAULT 1 COMMENT '状态'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品分类表';
 
 -- ============================================
@@ -56,11 +52,6 @@ CREATE TABLE product (
   status TINYINT DEFAULT 1 COMMENT '状态 1上架 0下架',
   is_hot TINYINT DEFAULT 0 COMMENT '是否热门',
   is_new TINYINT DEFAULT 0 COMMENT '是否新品',
-  rating DECIMAL(2,1) DEFAULT 5.0 COMMENT '评分',
-  review_count INT DEFAULT 0 COMMENT '评论数',
-  deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_category (category_id),
   INDEX idx_hot (is_hot),
   INDEX idx_new (is_new)
@@ -76,8 +67,6 @@ CREATE TABLE cart (
   product_id BIGINT NOT NULL COMMENT '商品ID',
   quantity INT DEFAULT 1 COMMENT '数量',
   selected TINYINT DEFAULT 1 COMMENT '是否选中',
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='购物车表';
 
@@ -112,12 +101,12 @@ CREATE TABLE order_item (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT NOT NULL COMMENT '订单ID',
   product_id BIGINT NOT NULL COMMENT '商品ID',
-  product_name VARCHAR(200) DEFAULT '' COMMENT '商品名称快照',
-  product_image VARCHAR(500) DEFAULT '' COMMENT '商品图片快照',
   price DECIMAL(10,2) NOT NULL COMMENT '单价快照',
   quantity INT NOT NULL COMMENT '数量',
   total_price DECIMAL(10,2) NOT NULL COMMENT '小计',
-  INDEX idx_order (order_id)
+  INDEX idx_order (order_id),
+  CONSTRAINT fk_order_item_order FOREIGN KEY (order_id) REFERENCES orders(id),
+  CONSTRAINT fk_order_item_product FOREIGN KEY (product_id) REFERENCES product(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单项表';
 
 -- ============================================
@@ -143,26 +132,9 @@ CREATE TABLE favorite (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL COMMENT '用户ID',
   product_id BIGINT NOT NULL COMMENT '商品ID',
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uk_user_product (user_id, product_id),
   INDEX idx_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收藏表';
-
--- ============================================
--- 9. 评论表
--- ============================================
-DROP TABLE IF EXISTS review;
-CREATE TABLE review (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT NOT NULL COMMENT '用户ID',
-  product_id BIGINT NOT NULL COMMENT '商品ID',
-  order_id BIGINT DEFAULT NULL COMMENT '订单ID',
-  content VARCHAR(500) DEFAULT '' COMMENT '评论内容',
-  star TINYINT DEFAULT 5 COMMENT '星级 1-5',
-  images VARCHAR(1000) DEFAULT '' COMMENT '图片JSON数组',
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_product (product_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='评论表';
 
 -- ============================================
 -- 种子数据

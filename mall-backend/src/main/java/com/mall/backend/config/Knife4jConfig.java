@@ -13,7 +13,7 @@ public class Knife4jConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
             .info(new Info()
-                .title("AI+低代码协同电商平台接口文档")
+                .title("潮购电商平台接口文档")
                 .version("1.0.0")
                 .description("基于 Spring Boot 3 + MyBatis-Plus 的电商平台后端 RESTful API 文档")
                 .contact(new Contact()

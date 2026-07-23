@@ -17,12 +17,16 @@
               :class="{ active: !route.query.categoryId }"
               @click="selectCategory(null)"
             >全部</li>
-            <li
-              v-for="cat in categories"
-              :key="cat.id"
-              :class="{ active: String(route.query.categoryId) === String(cat.id) }"
-              @click="selectCategory(cat.id)"
-            >{{ cat.name }}</li>
+            <template v-for="cat in categories" :key="cat.id">
+              <li class="root-cat">{{ cat.name }}</li>
+              <li
+                v-for="child in cat.children"
+                :key="child.id"
+                :class="{ active: String(route.query.categoryId) === String(child.id) }"
+                @click="selectCategory(child.id)"
+                class="child-cat"
+              >{{ child.name }}</li>
+            </template>
           </ul>
         </aside>
 
@@ -82,8 +86,14 @@ const sortType = ref('default')
 const currentCategory = computed(() => {
   const cid = route.query.categoryId
   if (!cid) return ''
-  const cat = categories.value.find(c => String(c.id) === String(cid))
-  return cat ? cat.name : ''
+  for (const cat of categories.value) {
+    if (String(cat.id) === String(cid)) return cat.name
+    if (cat.children) {
+      const child = cat.children.find(c => String(c.id) === String(cid))
+      if (child) return child.name
+    }
+  }
+  return ''
 })
 
 function selectCategory(cid) {
@@ -109,14 +119,23 @@ watch(() => route.query.categoryId, () => {
 async function fetchData() {
   loading.value = true
   try {
-    const res = await axios.get('/api/product/list', {
-      params: {
-        page: page.value,
-        pageSize,
-        categoryId: route.query.categoryId || undefined,
-        sort: sortType.value
-      }
-    })
+    const cid = route.query.categoryId
+    const pageNum = page.value
+    const sort = sortType.value
+
+    // 根据参数构建 RESTful URL
+    let url
+    if (cid) {
+      url = sort !== 'default'
+        ? `/api/product/list/category/${cid}/${pageNum}/${pageSize}/${sort}`
+        : `/api/product/list/category/${cid}/${pageNum}/${pageSize}`
+    } else {
+      url = sort !== 'default'
+        ? `/api/product/list/${pageNum}/${pageSize}/${sort}`
+        : `/api/product/list/${pageNum}/${pageSize}`
+    }
+
+    const res = await axios.get(url)
     if (res.data.code === 200) {
       list.value = res.data.data.list
       total.value = res.data.data.total
@@ -170,6 +189,16 @@ onMounted(async () => {
       background: lighten($primary-color, 42%);
       color: $primary-color;
       font-weight: 600;
+    }
+    &.root-cat {
+      font-weight: 600;
+      color: $text-primary;
+      cursor: default;
+      padding-top: 10px;
+      &:hover { background: transparent; color: $text-primary; }
+    }
+    &.child-cat {
+      padding-left: 28px;
     }
   }
 }

@@ -39,6 +39,9 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item v-if="userStore.userInfo?.role === 1" @click="$router.push('/admin')">
+                  <el-icon><Setting /></el-icon> 后台管理
+                </el-dropdown-item>
                 <el-dropdown-item @click="userStore.logout()">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -58,12 +61,19 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useCartStore } from '@/stores/cart'
 import SearchBox from './SearchBox.vue'
 
 const userStore = useUserStore()
 const cartStore = useCartStore()
+
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    cartStore.fetchCart()
+  }
+})
 </script>
 
 <style lang="scss" scoped>

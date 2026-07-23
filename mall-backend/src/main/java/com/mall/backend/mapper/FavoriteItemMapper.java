@@ -9,7 +9,7 @@ import java.util.List;
 @Mapper
 public interface FavoriteItemMapper extends BaseMapper<FavoriteItem> {
 
-    @Select("SELECT * FROM favorite WHERE user_id = #{userId} ORDER BY create_time DESC")
+    @Select("SELECT * FROM favorite WHERE user_id = #{userId} ORDER BY id DESC")
     List<FavoriteItem> selectByUserId(@Param("userId") Long userId);
 
     @Select("SELECT * FROM favorite WHERE user_id = #{userId} AND product_id = #{productId} LIMIT 1")

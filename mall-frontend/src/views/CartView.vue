@@ -106,8 +106,8 @@ function goConfirm() {
   router.push('/order/confirm')
 }
 
-function clearSelect() {
-  cartStore.clearSelected()
+async function clearSelect() {
+  await cartStore.clearSelected()
   ElMessage.success('已删除选中商品')
 }
 </script>

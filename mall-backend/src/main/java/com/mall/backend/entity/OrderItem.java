@@ -3,18 +3,23 @@ package com.mall.backend.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
 
-@TableName("cart")
+import java.math.BigDecimal;
+
+@TableName("order_item")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartItem {
+public class OrderItem {
     @TableId(type = IdType.AUTO)
     private Long id;
-    @TableField("user_id")
-    private Long userId;
+    @TableField("order_id")
+    private Long orderId;
     @TableField("product_id")
     private Long productId;
+    /** 下单时的价格快照 */
+    private BigDecimal price;
     private Integer quantity;
-    private Integer selected;
+    @TableField("total_price")
+    private BigDecimal totalPrice;
 }

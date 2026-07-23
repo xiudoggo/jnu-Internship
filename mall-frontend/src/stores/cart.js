@@ -14,7 +14,7 @@ export const useCartStore = defineStore('cart', () => {
     () => items.value.length > 0 && items.value.every(i => i.selected)
   )
 
-  // 从服务端拉取购物车数据
+  // 从后端拉取购物车
   async function fetchCart() {
     try {
       const res = await axios.get('/api/cart/list')
@@ -26,48 +26,70 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  // 添加商品到购物车
-  function addToCart(product, quantity = 1) {
-    const exist = items.value.find(i => i.productId === product.id)
-    if (exist) {
-      exist.quantity += quantity
-    } else {
-      items.value.push({
-        id: Date.now().toString(),
+  // 添加商品到购物车（调用后端接口）
+  async function addToCart(product, quantity = 1) {
+    try {
+      const res = await axios.post('/api/cart/add', {
         productId: product.id,
-        name: product.name,
-        image: product.coverImage || product.image,
-        price: product.price,
-        quantity,
-        selected: true
+        quantity
+      })
+      if (res.data.code === 200 && res.data.data) {
+        const d = res.data.data
+        const exist = items.value.find(i => i.productId === d.productId)
+        if (exist) {
+          exist.quantity = d.quantity
+        } else {
+          items.value.unshift({
+            id: d.id, productId: d.productId,
+            name: d.name, image: d.image,
+            price: d.price, quantity: d.quantity, selected: true
+          })
+        }
+      }
+    } catch {
+      // 网络失败回退：本地添加
+      const exist = items.value.find(i => i.productId === product.id)
+      if (exist) exist.quantity += quantity
+      else items.value.push({
+        id: Date.now().toString(), productId: product.id,
+        name: product.name, image: product.coverImage || product.image,
+        price: product.price, quantity, selected: true
       })
     }
   }
 
-  function removeItem(productId) {
-    const idx = items.value.findIndex(i => i.productId === productId)
-    if (idx > -1) items.value.splice(idx, 1)
+  async function removeItem(productId) {
+    const item = items.value.find(i => i.productId === productId)
+    if (!item) return
+    try {
+      await axios.delete('/api/cart/' + item.id)
+    } catch { /* */ }
+    items.value = items.value.filter(i => i.productId !== productId)
   }
 
-  function updateQuantity(productId, qty) {
+  async function updateQuantity(productId, qty) {
     const item = items.value.find(i => i.productId === productId)
-    if (item) {
-      item.quantity = Math.max(1, qty)
-    }
+    if (!item) return
+    item.quantity = Math.max(1, qty)
+    try {
+      await axios.put('/api/cart/' + item.id, { quantity: item.quantity })
+    } catch { /* */ }
   }
 
   function toggleSelect(productId) {
     const item = items.value.find(i => i.productId === productId)
-    if (item) {
-      item.selected = !item.selected
-    }
+    if (item) item.selected = !item.selected
   }
 
   function toggleSelectAll(checked) {
     items.value.forEach(i => (i.selected = checked))
   }
 
-  function clearSelected() {
+  async function clearSelected() {
+    const selected = items.value.filter(i => i.selected)
+    for (const item of selected) {
+      try { await axios.delete('/api/cart/' + item.id) } catch { /* */ }
+    }
     items.value = items.value.filter(i => !i.selected)
   }
 

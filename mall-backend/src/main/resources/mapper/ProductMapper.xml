@@ -2,37 +2,43 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.mall.backend.mapper.ProductMapper">
 
-    <!-- 分页 + 筛选 + 排序 -->
+    <!-- 分页 + 筛选 + 排序（用户端：仅上架商品） -->
     <select id="selectPage" resultType="com.mall.backend.entity.Product">
-        SELECT * FROM product
-        WHERE deleted = 0
+        SELECT product.* FROM product
+        <if test="keyword != null and keyword != ''">
+            LEFT JOIN category ON product.category_id = category.id
+        </if>
+        WHERE product.status = 1
         <if test="categoryId != null">
-            AND category_id = #{categoryId}
+            AND product.category_id = #{categoryId}
         </if>
         <if test="keyword != null and keyword != ''">
-            AND (name LIKE CONCAT('%', #{keyword}, '%')
-                 OR description LIKE CONCAT('%', #{keyword}, '%')
-                 OR category_name LIKE CONCAT('%', #{keyword}, '%'))
+            AND (product.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR product.description LIKE CONCAT('%', #{keyword}, '%')
+                 OR category.name LIKE CONCAT('%', #{keyword}, '%'))
         </if>
         <choose>
-            <when test="sort == 'price-asc'">ORDER BY price ASC</when>
-            <when test="sort == 'price-desc'">ORDER BY price DESC</when>
-            <when test="sort == 'sales'">ORDER BY sales DESC</when>
-            <otherwise>ORDER BY id DESC</otherwise>
+            <when test="sort == 'price-asc'">ORDER BY product.price ASC</when>
+            <when test="sort == 'price-desc'">ORDER BY product.price DESC</when>
+            <when test="sort == 'sales'">ORDER BY product.sales DESC</when>
+            <otherwise>ORDER BY product.id DESC</otherwise>
         </choose>
         LIMIT #{offset}, #{size}
     </select>
 
     <select id="countFiltered" resultType="long">
         SELECT COUNT(*) FROM product
-        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            LEFT JOIN category ON product.category_id = category.id
+        </if>
+        WHERE product.status = 1
         <if test="categoryId != null">
-            AND category_id = #{categoryId}
+            AND product.category_id = #{categoryId}
         </if>
         <if test="keyword != null and keyword != ''">
-            AND (name LIKE CONCAT('%', #{keyword}, '%')
-                 OR description LIKE CONCAT('%', #{keyword}, '%')
-                 OR category_name LIKE CONCAT('%', #{keyword}, '%'))
+            AND (product.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR product.description LIKE CONCAT('%', #{keyword}, '%')
+                 OR category.name LIKE CONCAT('%', #{keyword}, '%'))
         </if>
     </select>
 
