@@ -82,7 +82,13 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/admin/products'
+        redirect: '/admin/dashboard'
+      },
+      {
+        path: 'dashboard',
+        name: 'AdminDashboard',
+        component: () => import('@/views/admin/Dashboard.vue'),
+        meta: { title: '数据统计 - 后台' }
       },
       {
         path: 'products',

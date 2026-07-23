@@ -47,7 +47,7 @@ app.config.errorHandler = (err, vm, info) => {
 
 // 只注册实际用到的图标，避免全部加载
 const usedIcons = ['ShoppingCart', 'Tickets', 'Star', 'StarFilled', 'ArrowDown',
-  'TrendCharts', 'Present', 'Search', 'Phone', 'Lock', 'User', 'Delete',
+  'TrendCharts', 'DataAnalysis', 'Present', 'Search', 'Phone', 'Lock', 'User', 'Delete',
   'Goods', 'Location', 'Monitor', 'MagicStick', 'Food', 'House', 'Bicycle',
   'Back', 'Setting', 'Edit', 'Plus', 'RefreshRight']
 for (const key of usedIcons) {
