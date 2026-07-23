@@ -5,8 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import com.mall.backend.dto.Result;
-import com.mall.backend.entity.Product;
-import com.mall.backend.mapper.ProductMapper;
+import com.mall.backend.service.SearchService;
 
 import java.util.*;
 
@@ -15,10 +14,10 @@ import java.util.*;
 @RequestMapping("/api/search")
 public class SearchController {
 
-    private final ProductMapper mapper;
+    private final SearchService searchService;
 
-    public SearchController(ProductMapper mapper) {
-        this.mapper = mapper;
+    public SearchController(SearchService searchService) {
+        this.searchService = searchService;
     }
 
     /** 关键词搜索（默认分页） */
@@ -26,7 +25,7 @@ public class SearchController {
     @GetMapping("/{keyword}")
     public Result<Map<String, Object>> search(
             @Parameter(description = "搜索关键词") @PathVariable String keyword) {
-        return doSearch(keyword.trim(), 1, 12);
+        return Result.ok(searchService.search(keyword.trim(), 1, 12));
     }
 
     /** 关键词搜索（分页） */
@@ -36,21 +35,6 @@ public class SearchController {
             @Parameter(description = "搜索关键词") @PathVariable String keyword,
             @Parameter(description = "页码", example = "1") @PathVariable int page,
             @Parameter(description = "每页数量", example = "12") @PathVariable int pageSize) {
-
-        return doSearch(keyword.trim(), page, pageSize);
-    }
-
-    private Result<Map<String, Object>> doSearch(String keyword, int page, int pageSize) {
-        int offset = (page - 1) * pageSize;
-
-        long total = mapper.countFiltered(null, keyword);
-        List<Product> list = mapper.selectPage(offset, pageSize, null, keyword, "default");
-
-        Map<String, Object> data = new LinkedHashMap<>();
-        data.put("total", total);
-        data.put("list", list);
-        data.put("page", page);
-        data.put("pageSize", pageSize);
-        return Result.ok(data);
+        return Result.ok(searchService.search(keyword.trim(), page, pageSize));
     }
 }
