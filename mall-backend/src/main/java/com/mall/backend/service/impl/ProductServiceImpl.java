@@ -4,6 +4,7 @@ import com.mall.backend.dto.PageResult;
 import com.mall.backend.entity.Product;
 import com.mall.backend.mapper.ProductMapper;
 import com.mall.backend.service.ProductService;
+import com.mall.backend.util.RedisUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper mapper;
+    private final RedisUtil redisUtil;
 
-    public ProductServiceImpl(ProductMapper mapper) {
+    public ProductServiceImpl(ProductMapper mapper, RedisUtil redisUtil) {
         this.mapper = mapper;
+        this.redisUtil = redisUtil;
     }
 
     @Override
@@ -51,16 +54,56 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> hot() {
-        return mapper.selectHot();
+        String key = "product::hot";
+        // 1. 尝试从 Redis 获取
+        try {
+            Object cached = redisUtil.get(key);
+            if (cached != null) {
+                @SuppressWarnings("unchecked")
+                List<Product> products = (List<Product>) cached;
+                return products;
+            }
+        } catch (Exception e) {
+            // Redis 不可用时 fallback 到数据库
+        }
+        // 2. 查数据库
+        List<Product> products = mapper.selectHot();
+        // 3. 写入 Redis，TTL 30 分钟
+        redisUtil.set(key, products, 30 * 60);
+        return products;
     }
 
     @Override
     public List<Product> news() {
-        return mapper.selectNew();
+        String key = "product::new";
+        // 1. 尝试从 Redis 获取
+        try {
+            Object cached = redisUtil.get(key);
+            if (cached != null) {
+                @SuppressWarnings("unchecked")
+                List<Product> products = (List<Product>) cached;
+                return products;
+            }
+        } catch (Exception e) {
+            // Redis 不可用时 fallback 到数据库
+        }
+        // 2. 查数据库
+        List<Product> products = mapper.selectNew();
+        // 3. 写入 Redis，TTL 30 分钟
+        redisUtil.set(key, products, 30 * 60);
+        return products;
     }
 
     @Override
     public Product detail(Long id) {
         return mapper.selectById(id);
+    }
+
+    /**
+     * 清除商品相关缓存（商品变更时调用）
+     */
+    public void clearProductCache() {
+        redisUtil.delete("product::hot");
+        redisUtil.delete("product::new");
     }
 }
