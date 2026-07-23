@@ -42,6 +42,8 @@ public class RequestLogFilter extends OncePerRequestFilter {
         DESC_MAP.put("POST /api/user/register",        "用户注册");
         DESC_MAP.put("POST /api/user/logout",          "用户登出");
         DESC_MAP.put("GET /api/user/info",             "获取个人信息");
+        DESC_MAP.put("POST /api/user/password/verify", "验证原密码");
+        DESC_MAP.put("PUT /api/user/password",         "修改密码");
         DESC_MAP.put("GET /api/product/list",          "浏览商品列表");
         DESC_MAP.put("GET /api/product/hot",           "浏览热门商品");
         DESC_MAP.put("GET /api/product/new",           "浏览新品推荐");
