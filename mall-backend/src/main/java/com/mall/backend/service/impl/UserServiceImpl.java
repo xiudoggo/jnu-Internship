@@ -75,6 +75,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean verifyPassword(Long userId, String oldPassword) {
+        MallUser u = mapper.selectById(userId);
+        if (u == null) return false;
+        return PasswordUtil.matches(oldPassword, u.getPassword());
+    }
+
+    @Override
+    public boolean updatePassword(Long userId, String oldPassword, String newPassword) {
+        MallUser u = mapper.selectById(userId);
+        if (u == null) return false;
+        if (!PasswordUtil.matches(oldPassword, u.getPassword())) return false;
+        u.setPassword(PasswordUtil.encode(newPassword));
+        mapper.updateById(u);
+        return true;
+    }
+
+    @Override
     public Map<String, Object> info(Long userId) {
         MallUser u = mapper.selectById(userId);
         if (u == null) return null;

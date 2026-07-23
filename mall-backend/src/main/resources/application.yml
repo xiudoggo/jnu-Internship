@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: mall-backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/mall?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  mvc:
+    throw-exception-if-no-handler-found: true
+
+server:
+  port: 8080
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.mall.backend.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+springdoc:
+  api-docs:
+    version: OPENAPI_3_0
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+knife4j:
+  enable: true
+  production: false

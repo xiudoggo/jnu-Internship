@@ -5,13 +5,16 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class JwtUtil {
-    private static final Key KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // 固定密钥，确保应用重启后已有 Token 仍然有效
+    private static final String SECRET = "MallJwt@2026#ChaoGou!ShoppingPlatform*Key";
+    private static final Key KEY = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     private static final long EXPIRE = 7 * 24 * 60 * 60 * 1000; // 7天
 
     /** 生成 Token */

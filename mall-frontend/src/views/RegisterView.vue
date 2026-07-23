@@ -2,10 +2,10 @@
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-header">
-        <router-link to="/" class="auth-logo">
+        <div class="auth-logo">
           <span class="logo-icon">&#x1f525;</span>
           <span class="logo-text">潮购</span>
-        </router-link>
+        </div>
         <h2>创建账号</h2>
         <p class="subtitle">加入潮购，发现潮流好物</p>
       </div>
