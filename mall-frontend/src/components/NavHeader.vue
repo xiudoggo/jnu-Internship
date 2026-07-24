@@ -15,7 +15,7 @@
       <!-- 右侧操作 -->
       <div class="header-actions">
         <router-link to="/cart" class="cart-btn">
-          <el-badge :value="cartStore.totalCount" :hidden="cartStore.totalCount === 0" :max="99">
+          <el-badge :value="cartStore.badgeCount" :hidden="cartStore.badgeCount === 0" :max="99">
             <el-icon :size="24"><ShoppingCart /></el-icon>
           </el-badge>
           <span class="action-text">购物车</span>
@@ -74,7 +74,7 @@ const cartStore = useCartStore()
 
 onMounted(() => {
   if (userStore.isLoggedIn) {
-    cartStore.fetchCart()
+    cartStore.fetchCartCount()
   }
 })
 </script>

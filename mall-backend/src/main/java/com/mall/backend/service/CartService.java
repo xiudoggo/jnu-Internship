@@ -8,4 +8,5 @@ public interface CartService {
     Map<String, Object> add(Long userId, Long productId, Integer quantity);
     void updateQuantity(Long cartItemId, Integer quantity);
     void remove(Long cartItemId);
+    int count(Long userId);
 }

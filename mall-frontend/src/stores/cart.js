@@ -4,6 +4,7 @@ import axios from 'axios'
 
 export const useCartStore = defineStore('cart', () => {
   const items = ref([])
+  const badgeCount = ref(0)  // 轻量角标计数，由 fetchCartCount 更新
 
   const totalCount = computed(() => items.value.reduce((sum, i) => sum + i.quantity, 0))
   const selectedItems = computed(() => items.value.filter(i => i.selected))
@@ -14,19 +15,30 @@ export const useCartStore = defineStore('cart', () => {
     () => items.value.length > 0 && items.value.every(i => i.selected)
   )
 
-  // 从后端拉取购物车
+  // 轻量：仅获取购物车商品总数（导航栏角标用，登录后调用）
+  async function fetchCartCount() {
+    try {
+      const res = await axios.get('/api/cart/count')
+      if (res.data.code === 200) {
+        badgeCount.value = res.data.data.count
+      }
+    } catch { /* ignore */ }
+  }
+
+  // 从后端拉取完整购物车列表（进入购物车页面时调用）
   async function fetchCart() {
     try {
       const res = await axios.get('/api/cart/list')
       if (res.data.code === 200) {
         items.value = res.data.data
+        badgeCount.value = totalCount.value
       }
     } catch {
       items.value = []
     }
   }
 
-  // 添加商品到购物车（调用后端接口）
+  // 添加商品到购物车（调用后端接口 + 本地乐观更新角标）
   async function addToCart(product, quantity = 1) {
     try {
       const res = await axios.post('/api/cart/add', {
@@ -45,6 +57,7 @@ export const useCartStore = defineStore('cart', () => {
             price: d.price, quantity: d.quantity, selected: true
           })
         }
+        badgeCount.value = totalCount.value
       }
     } catch {
       // 网络失败回退：本地添加
@@ -55,6 +68,7 @@ export const useCartStore = defineStore('cart', () => {
         name: product.name, image: product.coverImage || product.image,
         price: product.price, quantity, selected: true
       })
+      badgeCount.value = totalCount.value
     }
   }
 
@@ -65,6 +79,7 @@ export const useCartStore = defineStore('cart', () => {
       await axios.delete('/api/cart/' + item.id)
     } catch { /* */ }
     items.value = items.value.filter(i => i.productId !== productId)
+    badgeCount.value = totalCount.value
   }
 
   async function updateQuantity(productId, qty) {
@@ -74,6 +89,7 @@ export const useCartStore = defineStore('cart', () => {
     try {
       await axios.put('/api/cart/' + item.id, { quantity: item.quantity })
     } catch { /* */ }
+    badgeCount.value = totalCount.value
   }
 
   function toggleSelect(productId) {
@@ -91,15 +107,17 @@ export const useCartStore = defineStore('cart', () => {
       try { await axios.delete('/api/cart/' + item.id) } catch { /* */ }
     }
     items.value = items.value.filter(i => !i.selected)
+    badgeCount.value = totalCount.value
   }
 
   function clearCart() {
     items.value = []
+    badgeCount.value = 0
   }
 
   return {
-    items, totalCount, selectedItems, totalPrice, isAllSelected,
-    fetchCart, addToCart, removeItem, updateQuantity,
+    items, badgeCount, totalCount, selectedItems, totalPrice, isAllSelected,
+    fetchCartCount, fetchCart, addToCart, removeItem, updateQuantity,
     toggleSelect, toggleSelectAll, clearSelected, clearCart
   }
 })

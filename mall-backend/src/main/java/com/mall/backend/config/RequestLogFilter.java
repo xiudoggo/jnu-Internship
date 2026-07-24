@@ -50,6 +50,7 @@ public class RequestLogFilter extends OncePerRequestFilter {
         DESC_MAP.put("GET /api/product/",              "查看商品详情");
         DESC_MAP.put("GET /api/category/tree",         "获取分类树");
         DESC_MAP.put("GET /api/search/",               "搜索商品");
+        DESC_MAP.put("GET /api/cart/count",            "购物车角标数");
         DESC_MAP.put("GET /api/cart/list",             "查看购物车");
         DESC_MAP.put("POST /api/cart/add",             "加入购物车");
         DESC_MAP.put("PUT /api/cart/",                 "更新购物车");

@@ -89,6 +89,7 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCartStore } from '@/stores/cart'
@@ -97,6 +98,10 @@ import { useUserStore } from '@/stores/user'
 const cartStore = useCartStore()
 const userStore = useUserStore()
 const router = useRouter()
+
+onMounted(() => {
+  cartStore.fetchCart()
+})
 
 function goConfirm() {
   if (!userStore.isLoggedIn) {

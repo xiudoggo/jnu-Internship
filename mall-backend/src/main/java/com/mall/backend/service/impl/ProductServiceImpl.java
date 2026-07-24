@@ -5,12 +5,16 @@ import com.mall.backend.entity.Product;
 import com.mall.backend.mapper.ProductMapper;
 import com.mall.backend.service.ProductService;
 import com.mall.backend.util.RedisUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     private final ProductMapper mapper;
     private final RedisUtil redisUtil;
@@ -56,17 +60,15 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> hot() {
         String key = "product::hot";
         // 1. 尝试从 Redis 获取
-        try {
-            Object cached = redisUtil.get(key);
-            if (cached != null) {
-                @SuppressWarnings("unchecked")
-                List<Product> products = (List<Product>) cached;
-                return products;
-            }
-        } catch (Exception e) {
-            // Redis 不可用时 fallback 到数据库
+        Object cached = redisUtil.get(key);
+        if (cached instanceof List<?> list && !list.isEmpty()) {
+            log.info("Redis 缓存命中 ▶ {}", key);
+            @SuppressWarnings("unchecked")
+            List<Product> products = (List<Product>) list;
+            return products;
         }
         // 2. 查数据库
+        log.info("Redis 未命中 → 查询 DB ▶ {}", key);
         List<Product> products = mapper.selectHot();
         // 3. 写入 Redis，TTL 30 分钟
         redisUtil.set(key, products, 30 * 60);
@@ -77,17 +79,15 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> news() {
         String key = "product::new";
         // 1. 尝试从 Redis 获取
-        try {
-            Object cached = redisUtil.get(key);
-            if (cached != null) {
-                @SuppressWarnings("unchecked")
-                List<Product> products = (List<Product>) cached;
-                return products;
-            }
-        } catch (Exception e) {
-            // Redis 不可用时 fallback 到数据库
+        Object cached = redisUtil.get(key);
+        if (cached instanceof List<?> list && !list.isEmpty()) {
+            log.info("Redis 缓存命中 ▶ {}", key);
+            @SuppressWarnings("unchecked")
+            List<Product> products = (List<Product>) list;
+            return products;
         }
         // 2. 查数据库
+        log.info("Redis 未命中 → 查询 DB ▶ {}", key);
         List<Product> products = mapper.selectNew();
         // 3. 写入 Redis，TTL 30 分钟
         redisUtil.set(key, products, 30 * 60);

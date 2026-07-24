@@ -75,6 +75,11 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    public int count(Long userId) {
+        return cartMapper.countByUserId(userId);
+    }
+
+    @Override
     public void remove(Long cartItemId) {
         cartMapper.deleteById(cartItemId);
     }

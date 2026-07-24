@@ -21,6 +21,14 @@ public class CartController {
         this.cartService = cartService;
     }
 
+    @Operation(summary = "获取购物车商品总数", description = "仅返回商品总数量，用于导航栏角标")
+    @GetMapping("/count")
+    public Result<Map<String, Object>> count(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) return Result.ok(Map.of("count", 0));
+        return Result.ok(Map.of("count", cartService.count(userId)));
+    }
+
     @Operation(summary = "获取购物车列表", description = "获取当前登录用户的购物车商品列表")
     @GetMapping("/list")
     public Result<List<Map<String, Object>>> list(HttpServletRequest request) {

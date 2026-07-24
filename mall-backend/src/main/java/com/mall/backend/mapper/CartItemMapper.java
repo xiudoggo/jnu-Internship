@@ -15,6 +15,9 @@ public interface CartItemMapper extends BaseMapper<CartItem> {
     @Select("SELECT * FROM cart WHERE user_id = #{userId} AND product_id = #{productId} LIMIT 1")
     CartItem selectByUserAndProduct(@Param("userId") Long userId, @Param("productId") Long productId);
 
+    @Select("SELECT COALESCE(SUM(quantity), 0) FROM cart WHERE user_id = #{userId}")
+    int countByUserId(@Param("userId") Long userId);
+
     @Delete("DELETE FROM cart WHERE user_id = #{userId} AND product_id = #{productId}")
     int deleteByUserAndProduct(@Param("userId") Long userId, @Param("productId") Long productId);
 }
